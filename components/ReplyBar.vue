@@ -10,7 +10,7 @@
                     :src="user"
                 >
             </div>
-            <p class="reply-bar-count">{{message.replyCount}}件のリプライ</p>
+            <p class="reply-bar-count">{{count}}件のリプライ</p>
             <P class="reply-bar-latest">最新のリプライ：{{lastReply}}</P>
         </div>
     </nuxt-link>
@@ -44,6 +44,9 @@ export default {
                 }
             }
             return usersArray;
+        },
+        count(){
+            return this.message.replys.length;
         }
     }
 }

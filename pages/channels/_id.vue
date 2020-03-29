@@ -65,7 +65,7 @@ export default{
 			snapshot.docChanges().forEach((change) => {
 				const doc = change.doc;
 				if(change.type === 'added'){
-					console.log('added ' + doc.id + ' channel-------');
+					//console.log('added ' + doc.id + ' channel-------');
 					if(!doc.data().parentMessageId){
 						this.messagesArray.push({
 							id: doc.id,
@@ -80,7 +80,7 @@ export default{
 						})
 					}
 				}else if(change.type === 'modified'){
-					console.log(doc.id + ' channel-------');
+					//console.log(doc.id + ' channel-------');
 				}
 			})
 		})

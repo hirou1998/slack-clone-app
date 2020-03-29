@@ -39,7 +39,9 @@ export default{
 			messagesArray: [],
 			replysArray: [],
 			selectedNum: undefined,
-			selectedMessage: []
+			selectedMessage: [],
+			messageIdArray: [],
+			replyFlg: false
 		}
 	},
 	computed: {
@@ -51,20 +53,30 @@ export default{
 	  		}
 		},
 		messageArrayWithReplys(){
-			for(var i = 0; i < this.replysArray.length; i++){
-				console.log('i: ' + i);
-				if(this.replysArray[i].parentMessageId === this.selectedMessage[0].id){
-					this.selectedMessage[0].replys.push(this.replysArray[i]);
+			if(!this.replyFlg){
+				for(var i = 0; i < this.replysArray.length; i++){
+				//console.log('i: ' + i);
+					if(this.replysArray[i].parentMessageId === this.selectedMessage[0].id){
+						this.selectedMessage[0].replys.push(this.replysArray[i]);
+					}
+					for(var j = 0; j < this.messagesArray.length; j++){
+						//console.log('j: ' + j)
+						if(this.replysArray[i].parentMessageId === this.messagesArray[j].id){
+							//console.log('hit')
+							this.messagesArray[j].replys.push(this.replysArray[i]);
+							break
+						}
+					}
 				}
-				for(var j = 0; j < this.messagesArray.length; j++){
-					console.log('j: ' + j)
-					if(this.replysArray[i].parentMessageId === this.messagesArray[j].id){
-						console.log('hit')
-						this.messagesArray[j].replys.push(this.replysArray[i]);
-						break
+			}else{
+				var lastReply = this.replysArray[this.replysArray.length - 1];
+				for(var i = 0; i < this.messagesArray.length; i++){
+					if(this.messagesArray[i].id === lastReply.parentMessageId){
+						this.messagesArray[i].replys.push(lastReply);
 					}
 				}
 			}
+			//console.log('new array was created');
 			return [this.messagesArray, this.selectedMessage];
 		}
 	},
@@ -78,15 +90,20 @@ export default{
 		const channelId = this.$route.params.channels;
 		this.messageId = messageId;
 		this.messagesArray = [];
-	    this.replysArray = [];
+		this.replysArray = [];
 
 		db.collection('channels').doc(channelId).collection('messages').orderBy("ts")
 		.onSnapshot((snapshot) => {
-			console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+			if(snapshot.docChanges().length === 1){
+				this.replyFlg = true;
+			}else{
+				this.replyFlg = false;
+			}
 			snapshot.docChanges().forEach((change) => {
 				const doc = change.doc;
+				//console.log(doc);
 				if(change.type === 'added'){
-					console.log('added ' + doc.id + ' thread-------');
+					//console.log('added ' + doc.id + ' thread-------');
 					if(!doc.data().parentMessageId){
 						if(doc.id === messageId){
 							this.selectedMessage.push({
@@ -113,8 +130,11 @@ export default{
 							replys: []
 						})
 					}
+				if(this.messageIdArray.indexOf(doc.id) == -1){
+					this.messageIdArray.push(doc.id);
+				}
 				}else if(change.type === 'modified'){
-					console.log('thread---modified' + doc.id)
+					//console.log('thread---modified' + doc.id)
 
 				}
 			})
